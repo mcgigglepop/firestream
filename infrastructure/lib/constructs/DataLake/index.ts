@@ -20,6 +20,7 @@ export class DataLakeConstruct extends Construct {
   public readonly gameEventsEtlRole: iam.Role;
   public readonly glueCrawlerRole: iam.Role;
   public readonly gameEventsEtlJob: glueCfn.CfnJob;
+  public readonly eventsCrawler: glueCfn.CfnCrawler;
 
   constructor(scope: Construct, id: string, props: DataLakeConstructProps) {
     super(scope, id);
@@ -281,6 +282,35 @@ export class DataLakeConstruct extends Construct {
         "--job-bookmark-option": "job-bookmark-enable",
         "--TempDir": `s3://${props.analyticsBucket.bucketName}/${props.config.GLUE_TMP_PREFIX}`,
       },
+    });
+
+    // Crawler crawls s3 partitioned data
+    this.eventsCrawler = new glueCfn.CfnCrawler(this, "EventsCrawler", {
+      role: this.glueCrawlerRole.roleArn,
+      description: `AWS Glue Crawler for partitioned data, for stack ${cdk.Aws.STACK_NAME}`,
+      databaseName: this.gameEventsDatabase.ref,
+      targets: {
+        s3Targets: [
+          {
+            path: `s3://${props.analyticsBucket.bucketName}/${props.config.PROCESSED_EVENTS_PREFIX}`,
+          },
+        ],
+      },
+      schemaChangePolicy: {
+        updateBehavior: "UPDATE_IN_DATABASE",
+        deleteBehavior: "LOG",
+      },
+      configuration: `{
+              "Version":1.0,
+              "CrawlerOutput":{
+                "Partitions":{
+                  "AddOrUpdateBehavior":"InheritFromTable"
+                },
+                "Tables":{
+                  "AddOrUpdateBehavior":"MergeNewColumns"
+                }
+              }
+            }`,
     });
 
 
