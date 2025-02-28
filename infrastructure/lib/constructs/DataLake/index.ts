@@ -320,8 +320,39 @@ export class DataLakeConstruct extends Construct {
         },
       }
     );
+
     gameEventsWorkflow.addDependency(gameEventsDatabase);
     gameEventsWorkflow.addDependency(rawEventsTable);
+
+    // Trigger for Glue crawler
+    const gameEventsCrawlerTrigger = new glueCfn.CfnTrigger(
+      this,
+      "GameEventsCrawlerTrigger",
+      {
+        type: "CONDITIONAL",
+        description: `Starts a crawler to update the Glue Data Catalog with any changes detected in the processed_events S3 prefix after the ETL job runs, for stack ${cdk.Aws.STACK_NAME}`,
+        startOnCreation: true,
+        workflowName: gameEventsWorkflow.ref,
+        actions: [
+          {
+            crawlerName: eventsCrawler.ref,
+          },
+        ],
+        predicate: {
+          conditions: [
+            {
+              logicalOperator: "EQUALS",
+              jobName: gameEventsEtlJob.ref,
+              state: "SUCCEEDED",
+            },
+          ],
+        },
+      }
+    );
+    
+    gameEventsCrawlerTrigger.addDependency(gameEventsEtlJob);
+    gameEventsCrawlerTrigger.addDependency(gameEventsWorkflow);
+    gameEventsCrawlerTrigger.addDependency(eventsCrawler);
 
 
   }
