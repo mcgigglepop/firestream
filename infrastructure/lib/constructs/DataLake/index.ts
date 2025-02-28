@@ -4,6 +4,8 @@ import * as sns from "aws-cdk-lib/aws-sns";
 import * as glueCfn from "aws-cdk-lib/aws-glue";
 import * as cdk from "aws-cdk-lib";
 import * as iam from "aws-cdk-lib/aws-iam";
+import * as events from "aws-cdk-lib/aws-events";
+import * as eventstargets from "aws-cdk-lib/aws-events-targets";
 import { Construct } from "constructs";
 
 import { GameAnalyticsPipelineConfig } from "../../helpers/config-types";
@@ -85,6 +87,7 @@ export class DataLakeConstruct extends Construct {
         },
       },
     });
+
     rawEventsTable.addDependency(gameEventsDatabase);
 
     // IAM Role allowing Glue ETL Job to access Analytics Bucket
@@ -97,6 +100,7 @@ export class DataLakeConstruct extends Construct {
         ),
       ],
     });
+
     gameEventsEtlRole.addToPolicy(
       new iam.PolicyStatement({
         sid: "S3Access",
@@ -113,6 +117,7 @@ export class DataLakeConstruct extends Construct {
         ],
       })
     );
+
     gameEventsEtlRole.addToPolicy(
       new iam.PolicyStatement({
         sid: "GlueTableAccess",
@@ -138,6 +143,7 @@ export class DataLakeConstruct extends Construct {
         ],
       })
     );
+
     gameEventsEtlRole.addToPolicy(
       new iam.PolicyStatement({
         sid: "GlueDBAccess",
@@ -153,6 +159,7 @@ export class DataLakeConstruct extends Construct {
         ],
       })
     );
+
     gameEventsEtlRole.addToPolicy(
       new iam.PolicyStatement({
         sid: "KMSAccess",
@@ -163,10 +170,12 @@ export class DataLakeConstruct extends Construct {
         ],
       })
     );
+
     const glueCrawlerRole = new iam.Role(this, "GlueCrawlerRole", {
       assumedBy: new iam.ServicePrincipal("glue.amazonaws.com"),
       path: "/",
     });
+
     glueCrawlerRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
@@ -182,6 +191,7 @@ export class DataLakeConstruct extends Construct {
         ],
       })
     );
+
     glueCrawlerRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
@@ -206,6 +216,7 @@ export class DataLakeConstruct extends Construct {
         ],
       })
     );
+
     glueCrawlerRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
@@ -220,6 +231,7 @@ export class DataLakeConstruct extends Construct {
         ],
       })
     );
+
     glueCrawlerRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
@@ -229,6 +241,7 @@ export class DataLakeConstruct extends Construct {
         ],
       })
     );
+    
     glueCrawlerRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
@@ -369,10 +382,58 @@ export class DataLakeConstruct extends Construct {
         ],
       }
     );
-    
+
     gameEventsETLJobTrigger.addDependency(gameEventsEtlJob);
     gameEventsETLJobTrigger.addDependency(gameEventsWorkflow);
 
+    // Event that starts ETL job
+    const etlJobStatusEventsRule = new events.Rule(this, "EtlJobStatusEvents", {
+      description: `CloudWatch Events Rule for generating status events for the Glue ETL Job for ${cdk.Aws.STACK_NAME}.`,
+      eventPattern: {
+        detailType: ["Glue Job State Change"],
+        source: ["aws.glue"],
+        detail: {
+          jobName: [gameEventsEtlJob.ref],
+        },
+      },
+      enabled: true,
+      targets: [new eventstargets.SnsTopic(props.notificationsTopic)],
+    });
+
+    etlJobStatusEventsRule.node.addDependency(gameEventsEtlJob);
+
+    const glueCrawlerStatusEventsRule = new events.Rule(
+      this,
+      "GlueCrawlerStatusEvents",
+      {
+        description: `CloudWatch Events Rule for generating status events for Glue ETL Job for stack ${cdk.Aws.STACK_NAME}`,
+        eventPattern: {
+          source: ["aws.glue"],
+          detailType: ["Glue Crawler State Change"],
+          detail: {
+            crawlerName: [eventsCrawler.ref],
+          },
+        },
+        enabled: true,
+        targets: [new eventstargets.SnsTopic(props.notificationsTopic)],
+      }
+    );
+
+    glueCrawlerStatusEventsRule.node.addDependency(eventsCrawler);
+
+    this.gameEventsDatabase = gameEventsDatabase;
+    this.rawEventsTable = rawEventsTable;
+
+    new cdk.CfnOutput(this, "GameEventsEtlJobOutput", {
+      description:
+        "ETL Job for processing game events into optimized format for analytics",
+      value: gameEventsEtlJob.ref,
+    });
+
+    new cdk.CfnOutput(this, "GameEventsDatabaseOutput", {
+      description: "Glue Catalog Database for storing game analytics events",
+      value: gameEventsDatabase.ref,
+    });
 
   }
 }
