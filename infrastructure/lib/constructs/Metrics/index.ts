@@ -20,6 +20,7 @@ interface MetricsConstructProps {
     gameEventsStream: cdk.aws_kinesis.Stream;
     tables: cdk.aws_dynamodb.Table[];
     functions: lambda.Function[];
+    stackName: string;
 }
 
 export class MetricsConstruct extends Construct {
