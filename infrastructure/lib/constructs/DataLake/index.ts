@@ -349,10 +349,29 @@ export class DataLakeConstruct extends Construct {
         },
       }
     );
-    
+
     gameEventsCrawlerTrigger.addDependency(gameEventsEtlJob);
     gameEventsCrawlerTrigger.addDependency(gameEventsWorkflow);
     gameEventsCrawlerTrigger.addDependency(eventsCrawler);
+
+    // Trigger to start glue job
+    const gameEventsETLJobTrigger = new glueCfn.CfnTrigger(
+      this,
+      "GameEventsTriggerETLJob",
+      {
+        workflowName: gameEventsWorkflow.ref,
+        type: "ON_DEMAND",
+        description: `Triggers the start of ETL job to process raw_events, for stack ${cdk.Aws.STACK_NAME}.`,
+        actions: [
+          {
+            jobName: gameEventsEtlJob.ref,
+          },
+        ],
+      }
+    );
+    
+    gameEventsETLJobTrigger.addDependency(gameEventsEtlJob);
+    gameEventsETLJobTrigger.addDependency(gameEventsWorkflow);
 
 
   }
