@@ -1,11 +1,4 @@
-interface AccountConfiguration {
-  NAME: string;
-  ACCOUNT: string;
-  REGION: string;
-}
-
 export interface GameAnalyticsPipelineConfig {
-  accounts: AccountConfiguration[];
   KinesisStreamShards: number;
   DEV_MODE: boolean;
   EnableStreamingAnalytics: boolean;
@@ -17,7 +10,6 @@ export interface GameAnalyticsPipelineConfig {
   NODE_VERSION: string;
   PYTHON_VERSION: string;
   EMAIL_ADDRESS: string;
-  CODECOMMIT_REPO: string;
   API_STAGE_NAME: string;
   RAW_EVENTS_PREFIX: string;
   PROCESSED_EVENTS_PREFIX: string;
