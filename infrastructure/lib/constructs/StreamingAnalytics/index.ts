@@ -82,7 +82,7 @@ const inputSchema: kinesisanalytics.CfnApplication.InputSchemaProperty = {
   },
 };
 
-export interface StreamingAnalyticsConstructProps{
+interface StreamingAnalyticsConstructProps{
   baseCodePath: string;
   gameEventsStream: kinesis.IStream;
   solutionHelper: lambda.IFunction;
@@ -94,7 +94,7 @@ export class StreamingAnalyticsConstruct extends Construct {
   public readonly kinesisAnalyticsApp: kinesisanalytics.CfnApplication;
 
   constructor(scope: Construct, id: string, props: StreamingAnalyticsConstructProps) {
-      super(scope, id);
+    super(scope, id);
 
     const codePath = `../../${props.baseCodePath}`;
 
@@ -273,7 +273,7 @@ export class StreamingAnalyticsConstruct extends Construct {
     startKinesisAnalyticsAppCustomResource.node.addDependency(
       props.gameEventsStream
     );
-    
+
     startKinesisAnalyticsAppCustomResource.node.addDependency(
       kinesisAnalyticsLambdaOutput
     );
