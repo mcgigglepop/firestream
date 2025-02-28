@@ -18,6 +18,7 @@ export class DataLakeConstruct extends Construct {
   public readonly gameEventsDatabase: glueCfn.CfnDatabase;
   public readonly rawEventsTable: glueCfn.CfnTable;
   public readonly gameEventsEtlRole: iam.Role;
+  public readonly glueCrawlerRole: iam.Role;
 
   constructor(scope: Construct, id: string, props: DataLakeConstructProps) {
     super(scope, id);
@@ -167,6 +168,91 @@ export class DataLakeConstruct extends Construct {
         ],
       })
     );
+
+    this.glueCrawlerRole = new iam.Role(this, "GlueCrawlerRole", {
+      assumedBy: new iam.ServicePrincipal("glue.amazonaws.com"),
+      path: "/",
+    });
+
+    this.glueCrawlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "s3:ListBucket",
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+        ],
+        resources: [
+          props.analyticsBucket.arnForObjects("*"),
+          props.analyticsBucket.bucketArn,
+        ],
+      })
+    );
+
+    this.glueCrawlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "glue:BatchGetPartition",
+          "glue:GetPartition",
+          "glue:GetPartitions",
+          "glue:BatchCreatePartition",
+          "glue:CreatePartition",
+          "glue:CreateTable",
+          "glue:GetTable",
+          "glue:GetTables",
+          "glue:GetTableVersion",
+          "glue:GetTableVersions",
+          "glue:UpdatePartition",
+          "glue:UpdateTable",
+        ],
+        resources: [
+          `arn:${cdk.Aws.PARTITION}:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:catalog`,
+          `arn:${cdk.Aws.PARTITION}:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:table/${this.gameEventsDatabase.ref}/*`,
+          `arn:${cdk.Aws.PARTITION}:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:database/${this.gameEventsDatabase.ref}`,
+        ],
+      })
+    );
+
+    this.glueCrawlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "glue:GetDatabase",
+          "glue:GetDatabases",
+          "glue:UpdateDatabase",
+        ],
+        resources: [
+          `arn:${cdk.Aws.PARTITION}:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:catalog`,
+          `arn:${cdk.Aws.PARTITION}:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:database/${this.gameEventsDatabase.ref}`,
+        ],
+      })
+    );
+
+    this.glueCrawlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["kms:Decrypt", "kms:Encrypt", "kms:GenerateDataKey"],
+        resources: [
+          `arn:${cdk.Aws.PARTITION}:kms:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:alias/aws/glue`,
+        ],
+      })
+    );
+    
+    this.glueCrawlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+        ],
+        resources: ["arn:*:logs:*:*:/aws-glue/*"],
+      })
+    );
+
+
 
   }
 }
