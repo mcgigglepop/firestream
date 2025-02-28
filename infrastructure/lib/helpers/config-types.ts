@@ -1,4 +1,4 @@
-export interface AnalyticsPipelineConfig {
+export interface GameAnalyticsPipelineConfig {
   KinesisStreamShards: number;
   DEV_MODE: boolean;
   EnableStreamingAnalytics: boolean;
