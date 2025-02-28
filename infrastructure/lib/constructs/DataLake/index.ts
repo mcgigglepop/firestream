@@ -17,15 +17,12 @@ interface DataLakeConstructProps {
 export class DataLakeConstruct extends Construct {
   public readonly gameEventsDatabase: glueCfn.CfnDatabase;
   public readonly rawEventsTable: glueCfn.CfnTable;
-  public readonly gameEventsEtlRole: iam.Role;
-  public readonly glueCrawlerRole: iam.Role;
-  public readonly gameEventsEtlJob: glueCfn.CfnJob;
-  public readonly eventsCrawler: glueCfn.CfnCrawler;
 
   constructor(scope: Construct, id: string, props: DataLakeConstructProps) {
     super(scope, id);
 
-    this.gameEventsDatabase = new glueCfn.CfnDatabase(
+    // Glue Database
+    const gameEventsDatabase = new glueCfn.CfnDatabase(
       this,
       "GameEventsDatabase",
       {
@@ -37,9 +34,10 @@ export class DataLakeConstruct extends Construct {
       }
     );
 
-    this.rawEventsTable = new glueCfn.CfnTable(this, "GameRawEventsTable", {
+    // Glue table for raw events that come in from stream
+    const rawEventsTable = new glueCfn.CfnTable(this, "GameRawEventsTable", {
       catalogId: cdk.Aws.ACCOUNT_ID,
-      databaseName: this.gameEventsDatabase.ref,
+      databaseName: gameEventsDatabase.ref,
       tableInput: {
         description: `Stores raw event data from the game analytics pipeline for stack ${cdk.Aws.STACK_NAME}`,
         name: props.config.RAW_EVENTS_TABLE,
@@ -87,11 +85,10 @@ export class DataLakeConstruct extends Construct {
         },
       },
     });
-
-    this.rawEventsTable.addDependency(this.gameEventsDatabase);
+    rawEventsTable.addDependency(gameEventsDatabase);
 
     // IAM Role allowing Glue ETL Job to access Analytics Bucket
-    this.gameEventsEtlRole = new iam.Role(this, "GameEventsEtlRole", {
+    const gameEventsEtlRole = new iam.Role(this, "GameEventsEtlRole", {
       assumedBy: new iam.ServicePrincipal("glue.amazonaws.com"),
       path: "/",
       managedPolicies: [
@@ -100,8 +97,7 @@ export class DataLakeConstruct extends Construct {
         ),
       ],
     });
-
-    this.gameEventsEtlRole.addToPolicy(
+    gameEventsEtlRole.addToPolicy(
       new iam.PolicyStatement({
         sid: "S3Access",
         effect: iam.Effect.ALLOW,
@@ -117,8 +113,7 @@ export class DataLakeConstruct extends Construct {
         ],
       })
     );
-
-    this.gameEventsEtlRole.addToPolicy(
+    gameEventsEtlRole.addToPolicy(
       new iam.PolicyStatement({
         sid: "GlueTableAccess",
         effect: iam.Effect.ALLOW,
@@ -138,13 +133,12 @@ export class DataLakeConstruct extends Construct {
         ],
         resources: [
           `arn:${cdk.Aws.PARTITION}:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:catalog`,
-          `arn:${cdk.Aws.PARTITION}:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:table/${this.gameEventsDatabase.ref}/*`,
-          `arn:${cdk.Aws.PARTITION}:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:database/${this.gameEventsDatabase.ref}`,
+          `arn:${cdk.Aws.PARTITION}:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:table/${gameEventsDatabase.ref}/*`,
+          `arn:${cdk.Aws.PARTITION}:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:database/${gameEventsDatabase.ref}`,
         ],
       })
     );
-
-    this.gameEventsEtlRole.addToPolicy(
+    gameEventsEtlRole.addToPolicy(
       new iam.PolicyStatement({
         sid: "GlueDBAccess",
         effect: iam.Effect.ALLOW,
@@ -155,12 +149,11 @@ export class DataLakeConstruct extends Construct {
         ],
         resources: [
           `arn:${cdk.Aws.PARTITION}:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:catalog`,
-          `arn:${cdk.Aws.PARTITION}:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:database/${this.gameEventsDatabase.ref}`,
+          `arn:${cdk.Aws.PARTITION}:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:database/${gameEventsDatabase.ref}`,
         ],
       })
     );
-
-    this.gameEventsEtlRole.addToPolicy(
+    gameEventsEtlRole.addToPolicy(
       new iam.PolicyStatement({
         sid: "KMSAccess",
         effect: iam.Effect.ALLOW,
@@ -170,13 +163,11 @@ export class DataLakeConstruct extends Construct {
         ],
       })
     );
-
-    this.glueCrawlerRole = new iam.Role(this, "GlueCrawlerRole", {
+    const glueCrawlerRole = new iam.Role(this, "GlueCrawlerRole", {
       assumedBy: new iam.ServicePrincipal("glue.amazonaws.com"),
       path: "/",
     });
-
-    this.glueCrawlerRole.addToPolicy(
+    glueCrawlerRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: [
@@ -191,8 +182,7 @@ export class DataLakeConstruct extends Construct {
         ],
       })
     );
-
-    this.glueCrawlerRole.addToPolicy(
+    glueCrawlerRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: [
@@ -211,13 +201,12 @@ export class DataLakeConstruct extends Construct {
         ],
         resources: [
           `arn:${cdk.Aws.PARTITION}:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:catalog`,
-          `arn:${cdk.Aws.PARTITION}:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:table/${this.gameEventsDatabase.ref}/*`,
-          `arn:${cdk.Aws.PARTITION}:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:database/${this.gameEventsDatabase.ref}`,
+          `arn:${cdk.Aws.PARTITION}:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:table/${gameEventsDatabase.ref}/*`,
+          `arn:${cdk.Aws.PARTITION}:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:database/${gameEventsDatabase.ref}`,
         ],
       })
     );
-
-    this.glueCrawlerRole.addToPolicy(
+    glueCrawlerRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: [
@@ -227,12 +216,11 @@ export class DataLakeConstruct extends Construct {
         ],
         resources: [
           `arn:${cdk.Aws.PARTITION}:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:catalog`,
-          `arn:${cdk.Aws.PARTITION}:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:database/${this.gameEventsDatabase.ref}`,
+          `arn:${cdk.Aws.PARTITION}:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:database/${gameEventsDatabase.ref}`,
         ],
       })
     );
-
-    this.glueCrawlerRole.addToPolicy(
+    glueCrawlerRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: ["kms:Decrypt", "kms:Encrypt", "kms:GenerateDataKey"],
@@ -241,8 +229,7 @@ export class DataLakeConstruct extends Construct {
         ],
       })
     );
-
-    this.glueCrawlerRole.addToPolicy(
+    glueCrawlerRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: [
@@ -255,7 +242,7 @@ export class DataLakeConstruct extends Construct {
     );
 
     // Glue ETL Job to process events from staging and repartition by event_type and date
-    this.gameEventsEtlJob = new glueCfn.CfnJob(this, "GameEventsEtlJob", {
+    const gameEventsEtlJob = new glueCfn.CfnJob(this, "GameEventsEtlJob", {
       description: `Etl job for processing raw game event data, for stack ${cdk.Aws.STACK_NAME}.`,
       glueVersion: "4.0",
       maxRetries: 0,
@@ -269,12 +256,12 @@ export class DataLakeConstruct extends Construct {
         pythonVersion: "3",
         scriptLocation: `s3://${props.analyticsBucket.bucketName}/glue-scripts/game_events_etl.py`,
       },
-      role: this.gameEventsEtlRole.roleArn,
+      role: gameEventsEtlRole.roleArn,
       defaultArguments: {
         "--enable-metrics": "true",
         "--enable-continuous-cloudwatch-log": "true",
         "--enable-glue-datacatalog": "true",
-        "--database_name": this.gameEventsDatabase.ref,
+        "--database_name": gameEventsDatabase.ref,
         "--raw_events_table_name": props.config.RAW_EVENTS_TABLE,
         "--analytics_bucket": `s3://${props.analyticsBucket.bucketName}/`,
         "--processed_data_prefix": props.config.PROCESSED_EVENTS_PREFIX,
@@ -285,10 +272,10 @@ export class DataLakeConstruct extends Construct {
     });
 
     // Crawler crawls s3 partitioned data
-    this.eventsCrawler = new glueCfn.CfnCrawler(this, "EventsCrawler", {
-      role: this.glueCrawlerRole.roleArn,
+    const eventsCrawler = new glueCfn.CfnCrawler(this, "EventsCrawler", {
+      role: glueCrawlerRole.roleArn,
       description: `AWS Glue Crawler for partitioned data, for stack ${cdk.Aws.STACK_NAME}`,
-      databaseName: this.gameEventsDatabase.ref,
+      databaseName: gameEventsDatabase.ref,
       targets: {
         s3Targets: [
           {
