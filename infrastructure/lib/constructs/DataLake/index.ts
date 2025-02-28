@@ -19,6 +19,7 @@ export class DataLakeConstruct extends Construct {
   public readonly rawEventsTable: glueCfn.CfnTable;
   public readonly gameEventsEtlRole: iam.Role;
   public readonly glueCrawlerRole: iam.Role;
+  public readonly gameEventsEtlJob: glueCfn.CfnJob;
 
   constructor(scope: Construct, id: string, props: DataLakeConstructProps) {
     super(scope, id);
@@ -239,7 +240,7 @@ export class DataLakeConstruct extends Construct {
         ],
       })
     );
-    
+
     this.glueCrawlerRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
@@ -251,6 +252,36 @@ export class DataLakeConstruct extends Construct {
         resources: ["arn:*:logs:*:*:/aws-glue/*"],
       })
     );
+
+    // Glue ETL Job to process events from staging and repartition by event_type and date
+    this.gameEventsEtlJob = new glueCfn.CfnJob(this, "GameEventsEtlJob", {
+      description: `Etl job for processing raw game event data, for stack ${cdk.Aws.STACK_NAME}.`,
+      glueVersion: "4.0",
+      maxRetries: 0,
+      maxCapacity: 10,
+      timeout: 30,
+      executionProperty: {
+        maxConcurrentRuns: 1,
+      },
+      command: {
+        name: "glueetl",
+        pythonVersion: "3",
+        scriptLocation: `s3://${props.analyticsBucket.bucketName}/glue-scripts/game_events_etl.py`,
+      },
+      role: this.gameEventsEtlRole.roleArn,
+      defaultArguments: {
+        "--enable-metrics": "true",
+        "--enable-continuous-cloudwatch-log": "true",
+        "--enable-glue-datacatalog": "true",
+        "--database_name": this.gameEventsDatabase.ref,
+        "--raw_events_table_name": props.config.RAW_EVENTS_TABLE,
+        "--analytics_bucket": `s3://${props.analyticsBucket.bucketName}/`,
+        "--processed_data_prefix": props.config.PROCESSED_EVENTS_PREFIX,
+        "--glue_tmp_prefix": props.config.GLUE_TMP_PREFIX,
+        "--job-bookmark-option": "job-bookmark-enable",
+        "--TempDir": `s3://${props.analyticsBucket.bucketName}/${props.config.GLUE_TMP_PREFIX}`,
+      },
+    });
 
 
 
