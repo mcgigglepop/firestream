@@ -16,57 +16,37 @@ interface ApiConstructProps {
 
 export class ApiConstruct extends Construct {
   public readonly gameAnalyticsApi: apigateway.RestApi;
-  public readonly apiGatewayRole: iam.Role;
 
   constructor(scope: Construct, id: string, props: ApiConstructProps) {
     super(scope, id);
 
-    // ✅ API Gateway Role
-    this.apiGatewayRole = new iam.Role(this, 'ApiGatewayRole', {
-      assumedBy: new iam.ServicePrincipal('apigateway.amazonaws.com'),
+    const apiGatewayRole = new iam.Role(this, "ApiGatewayRole", {
+      assumedBy: new iam.ServicePrincipal("apigateway.amazonaws.com"),
     });
-
-    this.apiGatewayRole.addToPolicy(
+    
+    apiGatewayRole.addToPolicy(
       new iam.PolicyStatement({
-        actions: ['kinesis:PutRecord', 'kinesis:PutRecords'],
+        actions: ["kinesis:PutRecord", "kinesis:PutRecords"],
         resources: [props.gameEventsStream.streamArn],
         effect: iam.Effect.ALLOW,
-        sid: 'ApigatewayPutKinesis',
+        sid: "ApigatewayPutKinesis",
       })
     );
 
-    this.apiGatewayRole.addToPolicy(
+    apiGatewayRole.addToPolicy(
       new iam.PolicyStatement({
-        actions: ['lambda:InvokeFunction'],
+        actions: ["lambda:InvokeFunction"],
         resources: [
           props.applicationAdminServiceFunction.functionArn,
           props.lambdaAuthorizer.functionArn,
         ],
         effect: iam.Effect.ALLOW,
-        sid: 'ApigatewayInvokeLambda',
+        sid: "ApigatewayInvokeLambda",
       })
     );
 
-    // ✅ CloudWatch Logging Role for API Gateway
-    const apiGatewayPushToCloudWatchRole = new iam.Role(
-      this,
-      'ApiGatewayPushToCloudWatchRole',
-      {
-        assumedBy: new iam.ServicePrincipal('apigateway.amazonaws.com'),
-        managedPolicies: [
-          iam.ManagedPolicy.fromAwsManagedPolicyName(
-            'service-role/AmazonAPIGatewayPushToCloudWatchLogs'
-          ),
-        ],
-      }
-    );
-
-    new apigateway.CfnAccount(this, 'ApiAccount', {
-      cloudWatchRoleArn: apiGatewayPushToCloudWatchRole.roleArn,
-    });
-
-    // ✅ Core API, used to manage applications externally
-    this.gameAnalyticsApi = new apigateway.SpecRestApi(
+    // Core API, used to manage applications externally
+    const gameAnalyticsApi = new apigateway.SpecRestApi(
       this,
       "GameAnalyticsApi",
       {
@@ -241,7 +221,7 @@ export class ApiConstruct extends Construct {
                   httpMethod: "POST",
                   contentHandling: "CONVERT_TO_TEXT",
                   type: "aws_proxy",
-                  credentials: this.apiGatewayRole.roleArn,
+                  credentials: apiGatewayRole.roleArn,
                 },
               },
             },
@@ -328,7 +308,7 @@ export class ApiConstruct extends Construct {
                   httpMethod: "POST",
                   contentHandling: "CONVERT_TO_TEXT",
                   type: "aws_proxy",
-                  credentials: this.apiGatewayRole.roleArn,
+                  credentials: apiGatewayRole.roleArn,
                 },
               },
             },
@@ -407,7 +387,7 @@ export class ApiConstruct extends Construct {
                   httpMethod: "POST",
                   contentHandling: "CONVERT_TO_TEXT",
                   type: "aws_proxy",
-                  credentials: this.apiGatewayRole.roleArn,
+                  credentials: apiGatewayRole.roleArn,
                 },
               },
             },
@@ -486,7 +466,7 @@ export class ApiConstruct extends Construct {
                   httpMethod: "POST",
                   contentHandling: "CONVERT_TO_TEXT",
                   type: "aws_proxy",
-                  credentials: this.apiGatewayRole.roleArn,
+                  credentials: apiGatewayRole.roleArn,
                 },
               },
             },
@@ -553,7 +533,7 @@ export class ApiConstruct extends Construct {
                 ],
                 "x-amazon-apigateway-integration": {
                   uri: `arn:${cdk.Aws.PARTITION}:apigateway:${cdk.Aws.REGION}:kinesis:action/PutRecords`,
-                  credentials: this.apiGatewayRole.roleArn,
+                  credentials: apiGatewayRole.roleArn,
                   passthroughBehavior: "never",
                   httpMethod: "POST",
                   type: "aws",
@@ -736,7 +716,7 @@ export class ApiConstruct extends Construct {
                 "x-amazon-apigateway-authtype": "custom",
                 "x-amazon-apigateway-authorizer": {
                   authorizerUri: `arn:${cdk.Aws.PARTITION}:apigateway:${cdk.Aws.REGION}:lambda:path/2015-03-31/functions/${props.lambdaAuthorizer.functionArn}/invocations`,
-                  authorizerCredentials: this.apiGatewayRole.roleArn,
+                  authorizerCredentials: apiGatewayRole.roleArn,
                   authorizerResultTtlInSeconds: 300,
                   identitySource: "method.request.header.Authorization",
                   type: "request",
@@ -754,23 +734,46 @@ export class ApiConstruct extends Construct {
       }
     );
 
-    // ✅ Lambda Permission for API Gateway
-    new lambda.CfnPermission(this, 'ApplicationAdminServiceExecutionPermission', {
-      action: 'lambda:InvokeFunction',
-      functionName: props.applicationAdminServiceFunction.functionName, // Fixed incorrect ARN usage
-      principal: 'apigateway.amazonaws.com',
-      sourceArn: `arn:${cdk.Aws.PARTITION}:execute-api:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:${this.gameAnalyticsApi.restApiId}/*/*/applications/*`,
+    const apiGatewayPushToCloudWatchRole = new iam.Role(
+      this,
+      "ApiGatewayPushToCloudWatchRole",
+      {
+        assumedBy: new iam.ServicePrincipal("apigateway.amazonaws.com"),
+        managedPolicies: [
+          iam.ManagedPolicy.fromAwsManagedPolicyName(
+            "service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+          ),
+        ],
+      }
+    );
+
+    new apigateway.CfnAccount(this, "ApiAccount", {
+      cloudWatchRoleArn: apiGatewayPushToCloudWatchRole.roleArn,
     });
 
-    // ✅ Outputs
-    new cdk.CfnOutput(this, 'ApiBasePath', {
-      description: 'The base path of the Solution API',
-      value: this.gameAnalyticsApi.url, // Fixed incorrect domain reference
+    // Gives permission for API gateway to call necessary lambda
+    const applicationAdminServiceExecutionPermission =
+      new cdk.aws_lambda.CfnPermission(
+        this,
+        "ApplicationAdminServiceExecutionPermission",
+        {
+          action: "lambda:InvokeFunction",
+          functionName: props.applicationAdminServiceFunction.functionArn,
+          principal: "apigateway.amazonaws.com",
+          sourceArn: `arn:${cdk.Aws.PARTITION}:execute-api:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:${gameAnalyticsApi.restApiName}/*/*/applications/*`,
+        }
+      );
+
+    this.gameAnalyticsApi = gameAnalyticsApi;
+
+    new cdk.CfnOutput(this, "ApiBasePath", {
+      description: "The base path of the Solution API",
+      value: `${gameAnalyticsApi.domainName}/${gameAnalyticsApi.deploymentStage.stageName}`,
     });
 
-    new cdk.CfnOutput(this, 'ApiGatewayExecutionLogs', {
-      description: 'CloudWatch Log Group containing the API execution logs',
-      value: `https://console.aws.amazon.com/cloudwatch/home?region=${cdk.Aws.REGION}#logsV2:log-groups/log-group/API-Gateway-Execution-Logs_${this.gameAnalyticsApi.restApiId}%252Fprod`,
+    new cdk.CfnOutput(this, "ApiGatewayExecutionLogs", {
+      description: "CloudWatch Log Group containing the API execution logs",
+      value: `https://console.aws.amazon.com/cloudwatch/home?region=${cdk.Aws.REGION}#logsV2:log-groups/log-group/API-Gateway-Execution-Logs_${gameAnalyticsApi.restApiId}%252F${gameAnalyticsApi.deploymentStage.stageName}`,
     });
   }
 }
