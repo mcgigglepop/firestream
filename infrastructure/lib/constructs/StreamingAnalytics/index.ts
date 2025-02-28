@@ -1,13 +1,14 @@
 import * as cdk from "aws-cdk-lib";
-import { Construct } from "constructs";
 import * as kinesisanalytics from "aws-cdk-lib/aws-kinesisanalytics";
 import * as customresources from "aws-cdk-lib/custom-resources";
-import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as kinesis from "aws-cdk-lib/aws-kinesis";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as path from "path";
 import * as fs from "fs";
+
+import { Construct } from "constructs";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 
 const inputSchema: kinesisanalytics.CfnApplication.InputSchemaProperty = {
   recordColumns: [

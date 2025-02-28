@@ -2,8 +2,10 @@ import * as cdk from "aws-cdk-lib";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as logs from "aws-cdk-lib/aws-logs";
 import * as kinesisFirehose from "aws-cdk-lib/aws-kinesisfirehose";
-import { Construct } from "constructs";
+
 import { GameAnalyticsPipelineConfig } from "../helpers/config-types";
+
+import { Construct } from "constructs";
 
 interface StreamingIngestionConstructProps {
   applicationsTable: cdk.aws_dynamodb.Table;
