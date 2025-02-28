@@ -300,6 +300,28 @@ export class DataLakeConstruct extends Construct {
             }`,
     });
 
+    // Workflow that triggers glue ETL job, processes s3 data, and updates the data catalog
+    const gameEventsWorkflow = new glueCfn.CfnWorkflow(
+      this,
+      "GameEventsWorkflow",
+      {
+        description: `Orchestrates a Glue ETL Job and Crawler to process data in S3 and update data catalog, for stack ${cdk.Aws.STACK_NAME}`,
+        defaultRunProperties: {
+          "--enable-metrics": "true",
+          "--enable-continuous-cloudwatch-log": "true",
+          "--enable-glue-datacatalog": "true",
+          "--database_name": gameEventsDatabase.ref,
+          "--raw_events_table_name": rawEventsTable.ref,
+          "--analytics_bucket": `s3://${props.analyticsBucket.bucketName}/`,
+          "--processed_data_prefix": props.config.PROCESSED_EVENTS_PREFIX,
+          "--glue_tmp_prefix": props.config.GLUE_TMP_PREFIX,
+          "--job-bookmark-option": "job-bookmark-enable",
+          "--TempDir": `s3://${props.analyticsBucket.bucketName}/${props.config.GLUE_TMP_PREFIX}`,
+        },
+      }
+    );
+    gameEventsWorkflow.addDependency(gameEventsDatabase);
+    gameEventsWorkflow.addDependency(rawEventsTable);
 
 
   }
