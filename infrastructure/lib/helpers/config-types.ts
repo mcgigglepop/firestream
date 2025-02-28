@@ -1,4 +1,11 @@
+interface AccountConfiguration {
+  NAME: string;
+  ACCOUNT: string;
+  REGION: string;
+}
+
 export interface GameAnalyticsPipelineConfig {
+  accounts: AccountConfiguration[];
   KinesisStreamShards: number;
   DEV_MODE: boolean;
   EnableStreamingAnalytics: boolean;
