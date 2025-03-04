@@ -57,3 +57,5 @@ read*lock
 
 # Nx cache
 .nx/
+
+firestream-build
