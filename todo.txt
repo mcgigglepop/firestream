@@ -11,6 +11,8 @@
   terms and conditions page
   start your 30-day trial workflow
   bottom logos
+/dashboard
+  TODOS
 
 new pages
   /forgot-password

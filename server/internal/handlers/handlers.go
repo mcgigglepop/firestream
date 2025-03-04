@@ -47,3 +47,8 @@ func (m *Repository) SignUp(w http.ResponseWriter, r *http.Request) {
 func (m *Repository) Login(w http.ResponseWriter, r *http.Request) {
 	render.Template(w, r, "login.page.tmpl", &models.TemplateData{})
 }
+
+// Dashboard is the login page handler
+func (m *Repository) Dashboard(w http.ResponseWriter, r *http.Request) {
+	render.Template(w, r, "dashboard.page.tmpl", &models.TemplateData{})
+}
