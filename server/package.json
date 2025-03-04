@@ -1,0 +1,12 @@
+{
+  "name": "firestream",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "format": "npx prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "^3.3.2"
+  }
+}

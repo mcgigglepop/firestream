@@ -1,0 +1,133 @@
+{{define "base"}}
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Character Encoding -->
+    <meta charset="UTF-8" />
+
+    <!-- Viewport Settings -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=0"
+    />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Title (SEO Optimized) -->
+    <title>Firestream - Real-Time Gameplay Analytics for Game Developers</title>
+
+    <!-- Meta Description (SEO) -->
+    <meta
+      name="description"
+      content="Firestream provides real-time gameplay analytics for game developers. Gain insights, track performance, and enhance player experience with data-driven game analysis."
+    />
+
+    <!-- Meta Keywords (SEO) -->
+    <meta
+      name="keywords"
+      content="gameplay analytics, real-time game data, indie game analysis, game developers, indie developers, game performance tracking, player behavior insights, streaming game analytics, Firestream gaming stats"
+    />
+
+    <!-- Author Metadata -->
+    <meta name="author" content="Firestream Team" />
+
+    <!-- Robots Metadata -->
+    <meta name="robots" content="index, follow" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://firestream.com" />
+
+    <!-- Open Graph Metadata (Social Media Sharing) -->
+    <meta
+      property="og:title"
+      content="Firestream - Real-Time Gameplay Analytics for Game Developers"
+    />
+    <meta
+      property="og:description"
+      content="Track and analyze real-time gameplay data for game development. Firestream helps developers optimize player experience and game performance."
+    />
+    <meta
+      property="og:image"
+      content="https://firestream.com/assets/og-image.jpg"
+    />
+    <meta property="og:url" content="https://firestream.com" />
+    <meta property="og:type" content="website" />
+
+    <!-- Twitter Card Metadata -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Firestream - Real-Time Gameplay Analytics"
+    />
+    <meta
+      name="twitter:description"
+      content="Enhance your game with real-time gameplay insights. Firestream offers advanced analytics to optimize player engagement."
+    />
+    <meta
+      name="twitter:image"
+      content="https://firestream.com/assets/twitter-image.jpg"
+    />
+
+    <!-- Favicon -->
+    <link
+      rel="icon"
+      href="/static/images/brand/favicon.ico"
+      type="image/x-icon"
+    />
+    <link
+      rel="shortcut icon"
+      type="image/x-icon"
+      href="/static/images/brand/favicon.ico"
+    />
+
+    <!-- External Libraries -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+    />
+    {{block "css" .}} {{ end }}
+  </head>
+  <body>
+    {{block "content" .}} {{ end }}
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/npm/toastify-js"
+    ></script>
+    {{block "js" .}} {{ end }}
+    <script>
+      {{with .Error}}
+        Toastify({
+          text: "{{.}}",
+          duration: 3000,
+          gravity: "bottom",
+          position: "right",
+          stopOnFocus: true,
+          style: { background: "linear-gradient(to right, #B71C1C, #D32F2F)" },
+        }).showToast();
+      {{end}}
+
+      {{with .Flash}}
+        Toastify({
+          text: "{{.}}",
+          duration: 3000,
+          gravity: "bottom",
+          position: "right",
+          stopOnFocus: true,
+          style: { background: "linear-gradient(to right, #2E7D32, #4CAF50)" },
+        }).showToast();
+      {{end}}
+
+      {{with .Warning}}
+        Toastify({
+          text: "{{.}}",
+          duration: 3000,
+          gravity: "bottom",
+          position: "right",
+          stopOnFocus: true,
+          style: { background: "linear-gradient(to right, #E65100, #FB8C00)" },
+        }).showToast();
+      {{end}}
+    </script>
+  </body>
+</html>
+{{ end }}

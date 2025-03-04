@@ -1,0 +1,344 @@
+{{define "auth"}}
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Character Encoding -->
+    <meta charset="UTF-8" />
+
+    <!-- Viewport Settings -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Page Title (SEO Optimized) -->
+    <title>Firestream - Real-Time Gameplay Analytics for Game Developers</title>
+
+    <!-- Meta Description (SEO) -->
+    <meta
+      name="description"
+      content="Firestream provides real-time gameplay analytics for game developers. Gain insights, track performance, and enhance player experience with data-driven game analysis."
+    />
+
+    <!-- Meta Keywords (SEO) -->
+    <meta
+      name="keywords"
+      content="gameplay analytics, real-time game data, indie game analysis, game developers, indie developers, game performance tracking, player behavior insights, streaming game analytics, Firestream gaming stats"
+    />
+
+    <!-- Author Metadata -->
+    <meta name="author" content="Firestream Team" />
+
+    <!-- Robots Metadata -->
+    <meta name="robots" content="index, follow" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://firestream.com" />
+
+    <!-- Open Graph Metadata (Social Media Sharing) -->
+    <meta
+      property="og:title"
+      content="Firestream - Real-Time Gameplay Analytics for Game Developers"
+    />
+    <meta
+      property="og:description"
+      content="Track and analyze real-time gameplay data for game development. Firestream helps developers optimize player experience and game performance."
+    />
+    <meta
+      property="og:image"
+      content="https://firestream.com/assets/og-image.jpg"
+    />
+    <meta property="og:url" content="https://firestream.com" />
+    <meta property="og:type" content="website" />
+
+    <!-- Twitter Card Metadata -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Firestream - Real-Time Gameplay Analytics"
+    />
+    <meta
+      name="twitter:description"
+      content="Enhance your game with real-time gameplay insights. Firestream offers advanced analytics to optimize player engagement."
+    />
+    <meta
+      name="twitter:image"
+      content="https://firestream.com/assets/twitter-image.jpg"
+    />
+
+    <!-- Favicon -->
+    <link
+      rel="icon"
+      href="/static/images/brand/favicon.ico"
+      type="image/x-icon"
+    />
+    <link
+      rel="shortcut icon"
+      type="image/x-icon"
+      href="/static/images/brand/favicon.ico"
+    />
+
+    <!-- External Libraries -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+    />
+
+    <!-- Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- CSS Implementing Plugins -->
+    <link
+      rel="stylesheet"
+      href="/static/vendor/bootstrap-icons/font/bootstrap-icons.css"
+    />
+
+    <!-- CSS Front Template -->
+
+    <link
+      rel="preload"
+      href="/static/css/theme.min.css"
+      data-hs-appearance="default"
+      as="style"
+    />
+    <link
+      rel="preload"
+      href="/static/css/theme-dark.min.css"
+      data-hs-appearance="dark"
+      as="style"
+    />
+
+    <style data-hs-appearance-onload-styles>
+      * {
+        transition: unset !important;
+      }
+
+      body {
+        opacity: 0;
+      }
+    </style>
+
+    {{block "css" .}} {{ end }}
+
+    <script>
+      window.hs_config = {
+        autopath: '@@autopath',
+        deleteLine: 'hs-builder:delete',
+        'deleteLine:build': 'hs-builder:build-delete',
+        'deleteLine:dist': 'hs-builder:dist-delete',
+        previewMode: false,
+        startPath: '/index.html',
+        vars: {
+          themeFont:
+            'https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap',
+          version: '?v=1.0',
+        },
+        layoutBuilder: {
+          extend: { switcherSupport: true },
+          header: { layoutMode: 'default', containerMode: 'container-fluid' },
+          sidebarLayout: 'default',
+        },
+        themeAppearance: {
+          layoutSkin: 'default',
+          sidebarSkin: 'default',
+          styles: {
+            colors: {
+              primary: '#377dff',
+              transparent: 'transparent',
+              white: '#fff',
+              dark: '132144',
+              gray: { 100: '#f9fafc', 900: '#1e2022' },
+            },
+            font: 'Inter',
+          },
+        },
+        languageDirection: { lang: 'en' },
+        skipFilesFromBundle: {
+          dist: [
+            'assets/js/hs.theme-appearance.js',
+            'assets/js/hs.theme-appearance-charts.js',
+            'assets/js/demo.js',
+          ],
+          build: [
+            'assets/css/theme.css',
+            'assets/vendor/hs-navbar-vertical-aside/dist/hs-navbar-vertical-aside-mini-cache.js',
+            'assets/js/demo.js',
+            'assets/css/theme-dark.css',
+            'assets/css/docs.css',
+            'assets/vendor/icon-set/style.css',
+            'assets/js/hs.theme-appearance.js',
+            'assets/js/hs.theme-appearance-charts.js',
+            'node_modules/chartjs-plugin-datalabels/dist/chartjs-plugin-datalabels.min.js',
+            'assets/js/demo.js',
+          ],
+        },
+        minifyCSSFiles: ['assets/css/theme.css', 'assets/css/theme-dark.css'],
+        copyDependencies: {
+          dist: { '*assets/js/theme-custom.js': '' },
+          build: {
+            '*assets/js/theme-custom.js': '',
+            'node_modules/bootstrap-icons/font/*fonts/**': 'assets/css',
+          },
+        },
+        buildFolder: '',
+        replacePathsToCDN: {},
+        directoryNames: { src: './src', dist: './dist', build: './build' },
+        fileNames: {
+          dist: { js: 'theme.min.js', css: 'theme.min.css' },
+          build: {
+            css: 'theme.min.css',
+            js: 'theme.min.js',
+            vendorCSS: 'vendor.min.css',
+            vendorJS: 'vendor.min.js',
+          },
+        },
+        fileTypes: 'jpg|png|svg|mp4|webm|ogv|json',
+      };
+      window.hs_config.gulpRGBA = (p1) => {
+        const options = p1.split(',');
+        const hex = options[0].toString();
+        const transparent = options[1].toString();
+
+        var c;
+        if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+          c = hex.substring(1).split('');
+          if (c.length == 3) {
+            c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+          }
+          c = '0x' + c.join('');
+          return (
+            'rgba(' +
+            [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(',') +
+            ',' +
+            transparent +
+            ')'
+          );
+        }
+        throw new Error('Bad Hex');
+      };
+      window.hs_config.gulpDarken = (p1) => {
+        const options = p1.split(',');
+
+        let col = options[0].toString();
+        let amt = -parseInt(options[1]);
+        var usePound = false;
+
+        if (col[0] == '#') {
+          col = col.slice(1);
+          usePound = true;
+        }
+        var num = parseInt(col, 16);
+        var r = (num >> 16) + amt;
+        if (r > 255) {
+          r = 255;
+        } else if (r < 0) {
+          r = 0;
+        }
+        var b = ((num >> 8) & 0x00ff) + amt;
+        if (b > 255) {
+          b = 255;
+        } else if (b < 0) {
+          b = 0;
+        }
+        var g = (num & 0x0000ff) + amt;
+        if (g > 255) {
+          g = 255;
+        } else if (g < 0) {
+          g = 0;
+        }
+        return (usePound ? '#' : '') + (g | (b << 8) | (r << 16)).toString(16);
+      };
+      window.hs_config.gulpLighten = (p1) => {
+        const options = p1.split(',');
+
+        let col = options[0].toString();
+        let amt = parseInt(options[1]);
+        var usePound = false;
+
+        if (col[0] == '#') {
+          col = col.slice(1);
+          usePound = true;
+        }
+        var num = parseInt(col, 16);
+        var r = (num >> 16) + amt;
+        if (r > 255) {
+          r = 255;
+        } else if (r < 0) {
+          r = 0;
+        }
+        var b = ((num >> 8) & 0x00ff) + amt;
+        if (b > 255) {
+          b = 255;
+        } else if (b < 0) {
+          b = 0;
+        }
+        var g = (num & 0x0000ff) + amt;
+        if (g > 255) {
+          g = 255;
+        } else if (g < 0) {
+          g = 0;
+        }
+        return (usePound ? '#' : '') + (g | (b << 8) | (r << 16)).toString(16);
+      };
+    </script>
+  </head>
+  <body>
+    <script src="/static/js/hs.theme-appearance.js"></script>
+    {{block "content" .}} {{ end }}
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/npm/toastify-js"
+    ></script>
+    <!-- JS Global Compulsory  -->
+    <script src="/static/vendor/jquery/dist/jquery.min.js"></script>
+    <script src="/static/vendor/jquery-migrate/dist/jquery-migrate.min.js"></script>
+    <script src="/static/vendor/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- JS Implementing Plugins -->
+    <script src="/static/vendor/hs-toggle-password/dist/js/hs-toggle-password.js"></script>
+
+    <!-- JS Front -->
+    <script src="/static/js/theme.min.js"></script>
+    {{block "js" .}} {{ end }}
+    <script>
+      {{with .Error}}
+        Toastify({
+          text: "{{.}}",
+          duration: 3000,
+          gravity: "bottom",
+          position: "right",
+          stopOnFocus: true,
+          style: { background: "linear-gradient(to right, #B71C1C, #D32F2F)" },
+        }).showToast();
+      {{end}}
+
+      {{with .Flash}}
+        Toastify({
+          text: "{{.}}",
+          duration: 3000,
+          gravity: "bottom",
+          position: "right",
+          stopOnFocus: true,
+          style: { background: "linear-gradient(to right, #2E7D32, #4CAF50)" },
+        }).showToast();
+      {{end}}
+
+      {{with .Warning}}
+        Toastify({
+          text: "{{.}}",
+          duration: 3000,
+          gravity: "bottom",
+          position: "right",
+          stopOnFocus: true,
+          style: { background: "linear-gradient(to right, #E65100, #FB8C00)" },
+        }).showToast();
+      {{end}}
+    </script>
+  </body>
+</html>
+{{ end }}
