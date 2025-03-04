@@ -1,0 +1,18 @@
+/login
+  replace logo 
+  sign in with google
+  enable form
+  forgot password page
+  bottom logos
+/signup  
+  replace logo 
+  sign up with google
+  enable form
+  terms and conditions page
+  start your 30-day trial workflow
+  bottom logos
+
+new pages
+  /forgot-password
+  /terms-and-conditions
+  /30-day-trial
