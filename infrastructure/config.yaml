@@ -1,0 +1,23 @@
+WORKLOAD_NAME: "GameAnalyticsPipelineII"
+CDK_VERSION: "2.84.0"
+NODE_VERSION: "latest"
+PYTHON_VERSION: "3.8"
+DEV_MODE: true
+ENABLE_STREAMING_ANALYTICS: true
+STREAM_SHARD_COUNT: 1
+CODECOMMIT_REPO: "game-analytics-pipeline-ii"
+RAW_EVENTS_PREFIX: "raw_events"
+PROCESSED_EVENTS_PREFIX: "processed_events"
+RAW_EVENTS_TABLE: "raw_events"
+GLUE_TMP_PREFIX: "glueetl-tmp"
+S3_BACKUP_MODE: false
+CLOUDWATCH_RETENTION_DAYS: 30
+API_STAGE_NAME: "live"
+EMAIL_ADDRESS: ""
+accounts:
+  - NAME: "QA"
+    ACCOUNT: ""
+    REGION: "us-east-1"
+  - NAME: "PROD"
+    ACCOUNT: ""
+    REGION: "us-east-1"
